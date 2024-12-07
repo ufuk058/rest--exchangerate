@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("api/v1/account")
 public class AccountController {
@@ -46,5 +48,15 @@ public class AccountController {
                         .message("Account: "+ accountDTO.getAccountNumber()+ "created")
                         .code(HttpStatus.CREATED.value())
                         .data(accountService.create(accountDTO)).build());
+    }
+
+    @GetMapping("/currency/{username}")
+    public ResponseEntity<ResponseWrapper> getAllAccountsByUsernameWithSelectedCurrencies(@PathVariable("username") String username,
+                                                                                          @RequestParam(name="currencies")List<String> currencies){
+        return ResponseEntity.ok(ResponseWrapper.builder()
+                .success(true)
+                .message("Balance successfully converted to selected currencies")
+                .code(HttpStatus.OK.value())
+                .data(accountService.findAllByUsernameAndCurrencyList(username, currencies)).build());
     }
 }

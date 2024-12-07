@@ -1,13 +1,16 @@
 package com.currency.service.impl;
 
+import com.currency.client.ExchangeRateClient;
 import com.currency.dto.AccountDTO;
 import com.currency.dto.UserDTO;
+import com.currency.dto.response.ExchangeRate;
 import com.currency.entity.Account;
 import com.currency.entity.User;
 import com.currency.repository.AccountRepository;
 import com.currency.service.AccountService;
 import com.currency.service.UserService;
 import com.currency.util.MapperUtil;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -18,15 +21,22 @@ import java.util.stream.Collectors;
 
 @Service
 public class AccountServiceImpl implements AccountService {
+    @Value("${api.key}")
+    private String apiKey;
     private final AccountRepository accountRepository;
     private final MapperUtil mapperUtil;
     private final UserService userService;
+    private final ExchangeRateClient client;
 
-    public AccountServiceImpl(AccountRepository accountRepository, MapperUtil mapperUtil, UserService userService) {
+    public AccountServiceImpl(AccountRepository accountRepository, MapperUtil mapperUtil, UserService userService, ExchangeRateClient client) {
         this.accountRepository = accountRepository;
         this.mapperUtil = mapperUtil;
         this.userService = userService;
+        this.client = client;
     }
+
+
+
 
     @Override
     public List<AccountDTO> findAllByUsername(String username) {
@@ -34,10 +44,33 @@ public class AccountServiceImpl implements AccountService {
         return accountRepository.findAllByUser_Username(username).stream().map(account-> {
             AccountDTO accountDTO=mapperUtil.convert(account, new AccountDTO());
             accountDTO.setUsername(username);
-//            Map<String, BigDecimal> otherCurrencies= new HashMap<>();
+            accountDTO.getBaseCurrency();
+            Map<String, BigDecimal> otherCurrencies= new HashMap<>();
+            accountDTO.setOtherCurrencies(getAllCurrenciesByBalance(accountDTO.getBalance(), accountDTO.getBaseCurrency()));
             return accountDTO;
         }).collect(Collectors.toList());
     }
+
+    private Map<String, BigDecimal> getAllCurrenciesByBalance(BigDecimal balance,String baseCurrency){
+
+        Map<String, BigDecimal> exchangeRates=client.getAllCurrencies(apiKey,baseCurrency).getConversion_rates();
+        Map<String, BigDecimal> otherCurrencies= new HashMap<>();
+        otherCurrencies=exchangeRates.entrySet().stream().collect(Collectors.toMap(
+                Map.Entry::getKey,
+                entry -> balance.multiply(entry.getValue())
+        ));
+        return otherCurrencies;
+    }
+
+
+
+
+
+
+
+
+
+
 
 
     @Override
@@ -79,6 +112,29 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public List<AccountDTO> findAllByUsernameAndCurrencyList(String username, List<String> currencyList) {
-        return List.of();
+        return accountRepository.findAllByUser_Username(username)
+                                                .stream().map(account ->{
+                                                    AccountDTO accountDTO= mapperUtil.convert(account, new AccountDTO());
+                                                    accountDTO.setUsername(username);
+                                                    Map<String,BigDecimal> otherCurrencies= new HashMap<>();
+                                                    accountDTO.setOtherCurrencies(getSelectedCurrenciesByBalance(accountDTO.getBalance(),
+                                                            accountDTO.getBaseCurrency(),currencyList));
+                                                    return accountDTO;
+
+                                                        }).collect(Collectors.toList());
     }
+
+    private Map<String, BigDecimal> getSelectedCurrenciesByBalance(BigDecimal balance,String baseCurrency, List<String> currencies){
+
+        Map<String, BigDecimal> exchangeRates=client.getAllCurrencies(apiKey,baseCurrency).getConversion_rates();
+        Map<String, BigDecimal> otherCurrencies= new HashMap<>();
+        otherCurrencies=exchangeRates.entrySet().stream().filter(entry ->currencies.
+                        contains(entry.getKey())).
+                        collect(Collectors.toMap(Map.Entry::getKey,
+                                    entry -> balance.multiply(entry.getValue())));
+        return otherCurrencies;
+    }
+
+
+
 }
