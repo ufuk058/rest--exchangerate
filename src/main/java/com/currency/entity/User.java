@@ -1,6 +1,5 @@
 package com.currency.entity;
 
-import com.currency.dto.AccountDTO;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToMany;
@@ -12,10 +11,10 @@ import java.util.List;
 
 @Entity
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Table(name="users")
-public class User extends  BaseEntity{
+public class User extends BaseEntity{
 
     private String firstName;
     private String lastName;
@@ -25,5 +24,4 @@ public class User extends  BaseEntity{
     private String password;
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
     private List<Account> accounts;
-
 }

@@ -18,9 +18,9 @@ import java.util.Map;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AccountDTO {
-
     @JsonIgnore
     private Long id;
+
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long accountNumber;
     private AccountType accountType;
@@ -29,5 +29,4 @@ public class AccountDTO {
     private String username;
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Map<String, BigDecimal> otherCurrencies;
-
 }
