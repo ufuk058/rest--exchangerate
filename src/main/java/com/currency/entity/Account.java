@@ -14,14 +14,13 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Table(name = "accounts")
 public class Account extends BaseEntity{
-
     @Column(unique = true)
     private Long accountNumber;
     @Enumerated(EnumType.STRING)
     private AccountType accountType;
     private String baseCurrency;
     private BigDecimal balance;
-
     @ManyToOne
     private User user;
+
 }
