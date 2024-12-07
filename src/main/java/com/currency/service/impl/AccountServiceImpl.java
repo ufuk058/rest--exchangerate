@@ -43,13 +43,13 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public AccountDTO create(AccountDTO accountDTO) {
        /// Find the user by username
-        UserDTO user = userService.findByUsername(accountDTO.getUsername());
+        UserDTO userDto = userService.findByUsername(accountDTO.getUsername());
 
         ///Convert AccountDTO to Account
         Account accountToSave=mapperUtil.convert(accountDTO, new Account());
 
         ///Set the user of the account y converting UserDTO to user
-        accountToSave.setUser(mapperUtil.convert(user, new User()));
+        accountToSave.setUser(mapperUtil.convert(userDto, new User()));
 
         /// Generate a random accountNumber for the new account
         accountToSave.setAccountNumber(generateAccountNumber());
@@ -58,10 +58,10 @@ public class AccountServiceImpl implements AccountService {
         Account newAccount=accountRepository.save(accountToSave);
 
         /// Convert the saved account Entity back to AccountDTO
-        AccountDTO accountToReturn= mapperUtil.convert(accountToSave, new AccountDTO());
+        AccountDTO accountToReturn= mapperUtil.convert(newAccount, new AccountDTO());
 
         /// Set the username in the returned AccountDTO for consistency
-        accountToReturn.setUsername(user.getUsername());
+        accountToReturn.setUsername(userDto.getUsername());
 
         return accountToReturn;
     }
