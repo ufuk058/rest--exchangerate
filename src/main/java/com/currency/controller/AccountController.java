@@ -1,0 +1,50 @@
+package com.currency.controller;
+
+import com.currency.dto.AccountDTO;
+import com.currency.dto.ResponseWrapper;
+import com.currency.service.AccountService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("api/v1/account")
+public class AccountController {
+
+    private final AccountService accountService;
+
+    public AccountController(AccountService accountService) {
+        this.accountService = accountService;
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<ResponseWrapper> getAllAccounts(){
+
+        return ResponseEntity.ok(ResponseWrapper.builder()
+                .success(true)
+                .message("All Accounts successfully retrieved")
+                .code(HttpStatus.OK.value())
+                .data(accountService.findAll()).build());
+    }
+
+    @GetMapping("/{username}")
+    public ResponseEntity<ResponseWrapper> getAllAccountByUsername(@PathVariable("username") String username){
+
+        return ResponseEntity.ok(ResponseWrapper.builder()
+                .success(true)
+                .message("All Accounts successfully retrieved")
+                .code(HttpStatus.OK.value())
+                .data(accountService.findAllByUsername(username)).build());
+    }
+
+    @PostMapping("/create")
+    public ResponseEntity<ResponseWrapper> createNewAccount(@RequestBody AccountDTO accountDTO){
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ResponseWrapper.builder()
+                        .success(true)
+                        .message("Account: "+ accountDTO.getAccountNumber()+ "created")
+                        .code(HttpStatus.CREATED.value())
+                        .data(accountService.create(accountDTO)).build());
+    }
+}
