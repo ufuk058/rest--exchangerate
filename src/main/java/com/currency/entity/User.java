@@ -2,6 +2,7 @@ package com.currency.entity;
 
 import com.currency.dto.AccountDTO;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -22,7 +23,7 @@ public class User extends  BaseEntity{
     private String email;
     private String username;
     private String password;
-    @OneToMany
-    private List<AccountDTO> accounts;
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+    private List<Account> accounts;
 
 }
